@@ -1,5 +1,5 @@
 module.exports = function(app) {
-    var apis = require('./controllers/roon');
+    var apis = require('./controllers/roonAPI');
 
     app.get('/roon/getCore', apis.getCore);
     app.get('/roon/listZones', apis.listZones);
