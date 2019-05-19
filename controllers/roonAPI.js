@@ -35,35 +35,67 @@ roon.init_services({
 svc_status.set_status("Extension enabled", false);
 roon.start_discovery();
 
+// Helper functions for Roon API calls
+
+function getCheckErrorCallback(res) {
+  return function(error) {
+    res.send({ status: error ? "fail" : "success" });
+  };
+}
+
+function callRoonTransport(idField, operation, req, res) {
+  if (core) {
+    core.services.RoonApiTransport.control(
+      req.query[idField],
+      operation,
+      getCheckErrorCallback(res)
+    );
+  } else {
+    res.send({ status: "core not connected" });
+  }
+}
+
+function callRoonTransportGet(idField, operation,res) {
+  if (core) {
+    core.services.RoonApiTransport[operation]((iserror, body) => {
+      if (!iserror) {
+        res.send({
+          result: body[idField]
+        });
+      } else {
+        res.send({ status: "fail" });
+      }
+    });
+  } else {
+    res.send({ status: "not connected" });
+    return;
+  }
+}
+
 // --------------- APIs ------------------
 
 exports.getCore = function(req, res) {
-  res.send({
-    id: core.core_id,
-    display_name: core.display_name,
-    display_version: core.display_version
-  });
+  var result;
+  if (core) {
+    result = {
+      id: core.core_id,
+      display_name: core.display_name,
+      display_version: core.display_version
+    };
+  } else {
+    result = { status: "not connected" };
+  }
+  res.send(result);
 };
 
 exports.listZones = function(req, res) {
-  core.services.RoonApiTransport.get_zones((iserror, body) => {
-    if (!iserror) {
-      res.send({
-        zones: body.zones
-      });
-    }
-  });
+  callRoonTransportGet("zones", "get_zones", res);
 };
 
 exports.listOutputs = function(req, res) {
-  core.services.RoonApiTransport.get_outputs((iserror, body) => {
-    if (!iserror) {
-      res.send({
-        outputs: body.outputs
-      });
-    }
-  });
+  callRoonTransportGet("outputs", "get_outputs", res);
 };
+
 exports.getZone = function(req, res) {
   res.send({
     zone: core.services.RoonApiTransport.zone_by_zone_id(req.query["zoneId"])
@@ -71,55 +103,27 @@ exports.getZone = function(req, res) {
 };
 
 exports.play_pause = function(req, res) {
-  core.services.RoonApiTransport.control(req.query["zoneId"], "playpause");
-
-  res.send({
-    status: "success"
-  });
+  callRoonTransport("zoneId", "playpause",req, res);
 };
 
 exports.stop = function(req, res) {
-  core.services.RoonApiTransport.control(req.query["zoneId"], "stop");
-
-  res.send({
-    status: "success"
-  });
+  callRoonTransport("zoneId", "stop",req, res);
 };
 
 exports.play = function(req, res) {
-  core.services.RoonApiTransport.control(req.query["zoneId"], "play");
-
-  res.send({
-    zone: "Success"
-  });
+  callRoonTransport("zoneId", "play",req, res);
 };
 
 exports.pause = function(req, res) {
-  core.services.RoonApiTransport.control(req.query["zoneId"], "pause");
-
-  res.send({
-    status: "success"
-  });
+  callRoonTransport("zoneId", "pause",req, res);
 };
 
 exports.previous = function(req, res) {
-  core.services.RoonApiTransport.control(req.query["zoneId"], "previous");
-
-  //    setTimeout(function(){
-  res.send({
-    zone: req.headers.referer
-  });
-  //    }, 2000);
+  callRoonTransport("zoneId", "previous",req, res);
 };
 
 exports.next = function(req, res) {
-  core.services.RoonApiTransport.control(req.query["zoneId"], "next");
-
-  //    setTimeout(function(){
-  res.send({
-    zone: core.services.RoonApiTransport.zone_by_zone_id(req.query["zoneId"])
-  });
-  //    }, 2000);
+  callRoonTransport("zoneId", "next",req, res);
 };
 
 exports.change_volume = function(req, res) {
