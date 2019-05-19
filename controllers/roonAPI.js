@@ -55,7 +55,7 @@ function callRoonTransport(idField, operation, req, res) {
   }
 }
 
-function callRoonTransportGet(idField, operation,res) {
+function callRoonTransportGet(idField, operation, res) {
   if (core) {
     core.services.RoonApiTransport[operation]((iserror, body) => {
       if (!iserror) {
@@ -103,51 +103,52 @@ exports.getZone = function(req, res) {
 };
 
 exports.play_pause = function(req, res) {
-  callRoonTransport("zoneId", "playpause",req, res);
+  callRoonTransport("zoneId", "playpause", req, res);
 };
 
 exports.stop = function(req, res) {
-  callRoonTransport("zoneId", "stop",req, res);
+  callRoonTransport("zoneId", "stop", req, res);
 };
 
 exports.play = function(req, res) {
-  callRoonTransport("zoneId", "play",req, res);
+  callRoonTransport("zoneId", "play", req, res);
 };
 
 exports.pause = function(req, res) {
-  callRoonTransport("zoneId", "pause",req, res);
+  callRoonTransport("zoneId", "pause", req, res);
 };
 
 exports.previous = function(req, res) {
-  callRoonTransport("zoneId", "previous",req, res);
+  callRoonTransport("zoneId", "previous", req, res);
 };
 
 exports.next = function(req, res) {
-  callRoonTransport("zoneId", "next",req, res);
+  callRoonTransport("zoneId", "next", req, res);
 };
 
 exports.change_volume = function(req, res) {
-  core.services.RoonApiTransport.change_volume(
-    req.query["outputId"],
-    "absolute",
-    req.query["volume"]
-  );
-
-  res.send({
-    status: "success"
-  });
+  if (core) {
+    core.services.RoonApiTransport.change_volume(
+      req.query["outputId"],
+      "absolute",
+      req.query["volume"],
+      getCheckErrorCallback(res)
+    );
+  } else {
+    res.send({ status: "not connected" });
+  }
 };
 
 exports.getMediumImage = function(req, res) {
-  get_image(req.query["image_key"], "fit", 300, 200, "image/jpeg", res);
+  getImageFromRoon(req, res, 640, 480);
 };
 
 exports.getIcon = function(req, res) {
-  get_image(req.query["image_key"], "fit", 100, 100, "image/jpeg", res);
+  getImageFromRoon(req, res, 100, 100);
 };
 
 exports.getImage = function(req, res) {
-  get_image(req.query["image_key"], "fit", 300, 200, "image/jpeg", res);
+  getImageFromRoon(req, res, 320, 240);
 };
 
 exports.getOriginalImage = function(req, res) {
@@ -162,6 +163,10 @@ exports.getOriginalImage = function(req, res) {
     res.end(body, "binary");
   });
 };
+
+function getImageFromRoon(req, res, width, height) {
+  get_image(req.query["image_key"], "fit", width, height, "image/jpeg", res);
+}
 
 function get_image(image_key, scale, width, height, format, res) {
   core.services.RoonApiImage.get_image(
@@ -353,14 +358,6 @@ function load_browse(page, listPerPage, cb) {
       cb(r.items);
     }
   );
-}
-
-function runCommand(command, zone_id) {
-  if (command == "play") {
-    core.services.RoonApiTransport.control(req.query["zoneId"], "play");
-  } else if (command == "pause") {
-    core.services.RoonApiTransport.control(req.query["zoneId"], "pause");
-  }
 }
 
 function get_timers() {
