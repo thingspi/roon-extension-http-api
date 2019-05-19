@@ -37,9 +37,13 @@ roon.start_discovery();
 
 // Helper functions for Roon API calls
 
+const FAILURE_MESSAGE = "fail";
+const SUCCESS_MESSAGE = "success";
+const CORE_NOT_CONNECTED_MESSAGE = "core_not_connected";
+
 function getCheckErrorCallback(res) {
   return function(error) {
-    res.send({ status: error ? "fail" : "success" });
+    res.send({ status: error ? FAILURE_MESSAGE : SUCCESS_MESSAGE });
   };
 }
 
@@ -51,7 +55,7 @@ function callRoonTransport(idField, operation, req, res) {
       getCheckErrorCallback(res)
     );
   } else {
-    res.send({ status: "core not connected" });
+    res.send({ status: CORE_NOT_CONNECTED_MESSAGE });
   }
 }
 
@@ -63,11 +67,11 @@ function callRoonTransportGet(idField, operation, res) {
           result: body[idField]
         });
       } else {
-        res.send({ status: "fail" });
+        res.send({ status: FAILURE_MESSAGE });
       }
     });
   } else {
-    res.send({ status: "not connected" });
+    res.send({ status: CORE_NOT_CONNECTED_MESSAGE });
     return;
   }
 }
@@ -135,7 +139,7 @@ exports.change_volume = function(req, res) {
       getCheckErrorCallback(res)
     );
   } else {
-    res.send({ status: "not connected" });
+    res.send({ status: CORE_NOT_CONNECTED_MESSAGE });
   }
 };
 
