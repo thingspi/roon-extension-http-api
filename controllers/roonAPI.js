@@ -101,9 +101,12 @@ exports.listOutputs = function(req, res) {
 };
 
 exports.getZone = function(req, res) {
-  res.send({
-    zone: core.services.RoonApiTransport.zone_by_zone_id(req.query["zoneId"])
-  });
+  if (core) {
+    var zoneRoon = core.services.RoonApiTransport.zone_by_zone_id(req.query["zoneId"]);
+    res.send({ zone: zoneRoon })
+  } else {
+    res.send({ status: CORE_NOT_CONNECTED_MESSAGE });
+  }
 };
 
 exports.play_pause = function(req, res) {
