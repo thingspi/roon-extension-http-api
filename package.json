@@ -10,6 +10,8 @@
     "node-roon-api-status": "github:roonlabs/node-roon-api-status",
     "node-roon-api-transport": "github:roonlabs/node-roon-api-transport",
     "node-roon-api-browse": "github:roonlabs/node-roon-api-browse",
-    "express": "4.x"
+    "express": "4.x",
+    "swagger-ui-express": "4.0",
+    "swagger-jsdoc": "3.2"
   }
 }

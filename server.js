@@ -1,9 +1,26 @@
-var express = require("express");
-var path = require("path");
+const express = require("express");
+const path = require("path");
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
-var app = express();
-
+const app = express();
 const PORT = 3001;
+
+const options = {
+  swaggerDefinition: {
+    info: {
+      title: 'Roon Rest API',
+      version: '1.0.0',
+      description: 'Rest API wrapper for Roon API',
+    },
+  },
+
+  apis: ['routes.js']
+};
+
+const specs = swaggerJsdoc(options);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use(express.static(path.join(__dirname, "htmls")));
 
